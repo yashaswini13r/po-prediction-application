@@ -1,25 +1,32 @@
 import streamlit as st
 from groq import Groq
 from prompts import SYSTEM_PROMPT
+
 client = Groq(
-    api_key=os.getenv("GROQ_API_KEY"))
+    api_key=st.secrets["GROQ_API_KEY"]
+)
 
-MODEL="llama-3.1-8b-instant"
+MODEL = "openai/gpt-oss-120b"
 
-def classify_po(po_description:str,Supplier:str="Not provided"):
-  user_prompt = f"""
-  PO Description: {po_description}
-  Supplier: {Supplier}
-  """
-  response = client.chat.completions.create(
-    model="MODEL",
-    temperature=0,
-    messages=[
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_prompt}
-    ]
+def classify_po(po_description: str, supplier: str = "Not provided"):
+    user_prompt = f"""
+PO Description:
+{po_description}
 
-  )
+Supplier:
+{supplier}
+"""
 
-  return response.choices[0].message.content
+    response = client.chat.completions.create(
+        model=MODEL,
+        temperature=0.0,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt}
+        ]
+    )
+
+    return response.choices[0].message.content
+
+
 
