@@ -20,4 +20,5 @@ def classify_po(po_description:str,Supplier:str="Not provided"):
     ]
 
   )
+
   return response.choices[0].message.content
