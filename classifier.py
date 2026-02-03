@@ -1,5 +1,5 @@
 import streamlit as st
-from gorq import Gorq
+from groq import Groq
 from prompts import SYSTEM_PROMPT
 client = Groq(
     api_key=os.getenv("GROQ_API_KEY"))
@@ -22,3 +22,4 @@ def classify_po(po_description:str,Supplier:str="Not provided"):
   )
 
   return response.choices[0].message.content
+
