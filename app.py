@@ -1,19 +1,20 @@
 import json
 import streamlit as st
-from classifier import classify_po
+from classifier import MODEL, classify_po
 
 st.set_page_config(page_title="PO Category Classifier", layout="centered")
-
 st.title("📦 PO Category Classifier")
 
 MAX_DESC_CHARS = 1500
 
 st.caption(
-    "Enter a clear, short PO description. Example: "
-    "'Office cleaning services - March'."
+    "Enter a clear, short PO description. Examples: "
+    "'DocuSign eSignature subscription' or 'Office cleaning services - March'."
 )
 
 with st.form("po_classify_form"):
+    st.write("Model:", MODEL)
+
     po_description = st.text_area(
         "PO Description",
         height=120,
@@ -24,12 +25,19 @@ with st.form("po_classify_form"):
         "Supplier (optional)",
         placeholder="e.g., DocuSign Inc",
     )
+    debug = st.checkbox("Show debug info")
     classify_clicked = st.form_submit_button("Classify")
 
 if classify_clicked:
     if not po_description.strip():
         st.warning("Please enter a PO description.")
     else:
+        if len(po_description.strip()) >= MAX_DESC_CHARS:
+            st.warning(
+                f"Description is at the {MAX_DESC_CHARS} character limit. "
+                "Consider shortening for better results."
+            )
+
         with st.spinner("Classifying..."):
             supplier_value = supplier.strip() or "Not provided"
             try:
@@ -39,6 +47,9 @@ if classify_clicked:
                 with st.expander("Error details"):
                     st.code(str(exc))
                 st.stop()
+
+            if debug:
+                st.write("Input supplier used:", supplier_value)
 
             try:
                 parsed = json.loads(result)
@@ -51,8 +62,17 @@ if classify_clicked:
                 c2.metric("L2", l2)
                 c3.metric("L3", l3)
 
-                st.json(parsed)
+                with st.expander("Raw JSON"):
+                    st.json(parsed)
+
+                st.download_button(
+                    "Download JSON",
+                    data=json.dumps(parsed, indent=2),
+                    file_name="po_classification.json",
+                    mime="application/json",
+                )
             except Exception:
                 st.error("Invalid model response")
                 st.text(result)
+
 
